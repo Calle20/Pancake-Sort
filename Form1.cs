@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.Collections;
 
 namespace Pancake_Sort
 {
@@ -20,8 +15,8 @@ namespace Pancake_Sort
             listBoxOutA.Items.Clear();
             listBoxOutB.Items.Clear();
         }
-        public static List<string> operations = new List<string>();
-        public static string currentOperations="";
+        public static List<List<string>> operations = new List<List<string>>();
+        public static List <string> currentOperations= new List<string>();
         public void btnOpen_Click(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -78,24 +73,31 @@ namespace Pancake_Sort
                 //            break;
                 //        }
                 //    }
-                SortPancakes(pancakes);
-                    //    SortPancakes(ReversePancakesAt(pancakes, i));
+                SortPancakes(new List<int>(pancakes));
+                //    SortPancakes(ReversePancakesAt(pancakes, i));
                 listBoxOutA.DataSource = operations;
             }
         }
         public static void SortPancakes(List<int> pancakes)
         {
-            for (int i = 0; i < pancakes.Count; i++)
+            for (int i = 1; i <= pancakes.Count; i++)
             {
                 var tempPancakes = ReversePancakesAt(new List<int>(pancakes), i);
-                currentOperations+="PW in "+i+"! ";
-                if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x => x)))
+                currentOperations.Add("PW in "+i+"! ");
+                if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x=>x)))
                 {
-                    operations.Add(currentOperations);
-                    currentOperations = "";
-                    return;
+                    operations.Add(new List<string>(currentOperations));
+                    currentOperations.RemoveAt(currentOperations.Count - 1);
+                    continue;
                 }
-                SortPancakes(tempPancakes);
+                else
+                {
+                    SortPancakes(new List<int>(tempPancakes));
+                }
+            }
+            if (currentOperations.Count != 0)
+            {
+                currentOperations.RemoveAt(currentOperations.Count - 1);
             }
         }
 
