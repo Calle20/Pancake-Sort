@@ -29,52 +29,8 @@ namespace Pancake_Sort
 
                 pancakes.RemoveAt(0);
 
-                //for (int i = 0; i < pancakes.Count; i++)
-                //{
-                //    var tempPancakes=ReversePancakesAt(new List <int>(pancakes), i);
-                //    currentOperations++;
-                //    for(int j = 0; j < tempPancakes.Count; j++)
-                //    {
-                //        var temp1Pancakes = ReversePancakesAt(new List<int> (tempPancakes), i);
-                //        currentOperations++;
-                //        for (int k = 0; k < temp1Pancakes.Count; k++)
-                //        {
-                //            var temp2Pancakes = ReversePancakesAt(new List<int> (temp1Pancakes), i);
-                //            currentOperations++;
-                //            for (int l = 0; l < temp2Pancakes.Count; l++)
-                //            {
-                //                var temp3Pancakes = ReversePancakesAt(new List<int> (temp2Pancakes), i);
-                //                currentOperations++;
-                //                for (int m = 0; m < temp3Pancakes.Count; m++)
-                //                {
-                //                    var temp4Pancakes = ReversePancakesAt(new List<int> (temp3Pancakes), i);
-                //                    currentOperations++;
-                //                    for (int n = 0; n < temp4Pancakes.Count; n++)
-                //                    {
-                //                        var temp5Pancakes = ReversePancakesAt(new List<int> (temp4Pancakes), i);
-                //                        currentOperations++;
-                //                        if (temp5Pancakes.SequenceEqual(temp5Pancakes.OrderBy(x => x))){
-                //                            break;
-                //                        }
-                //                    }
-                //                    if (temp4Pancakes.SequenceEqual(temp4Pancakes.OrderBy(x => x))){
-                //                        break;
-                //                    }
-                //                }
-                //                if (temp3Pancakes.SequenceEqual(temp3Pancakes.OrderBy(x => x))){
-                //                    break;
-                //                }
-                //            }
-                //            if (temp2Pancakes.SequenceEqual(temp2Pancakes.OrderBy(x => x))){
-                //                break;
-                //            }
-                //        }
-                //        if (temp1Pancakes.SequenceEqual(temp1Pancakes.OrderBy(x => x))){
-                //            break;
-                //        }
-                //    }
                 SortPancakes(new List<int>(pancakes));
-                //    SortPancakes(ReversePancakesAt(pancakes, i));
+
                 listBoxOutA.DataSource = operations;
             }
         }
