@@ -109,9 +109,9 @@
             // listBoxOutA
             // 
             this.listBoxOutA.FormattingEnabled = true;
-            this.listBoxOutA.Location = new System.Drawing.Point(3, 85);
+            this.listBoxOutA.Location = new System.Drawing.Point(3, 88);
             this.listBoxOutA.Name = "listBoxOutA";
-            this.listBoxOutA.Size = new System.Drawing.Size(166, 160);
+            this.listBoxOutA.Size = new System.Drawing.Size(166, 173);
             this.listBoxOutA.TabIndex = 11;
             // 
             // listBoxOutB
@@ -130,7 +130,7 @@
             this.groupBox1.Controls.Add(this.lblText);
             this.groupBox1.Location = new System.Drawing.Point(4, 9);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(171, 248);
+            this.groupBox1.Size = new System.Drawing.Size(171, 266);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Teil a)";
