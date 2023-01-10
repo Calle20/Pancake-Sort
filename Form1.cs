@@ -19,7 +19,8 @@ namespace Pancake_Sort
             listBoxOutB.Items.Clear();
         }
         public static SortedDictionary<int, List<string>> operations = new SortedDictionary<int, List<string>>();
-        async public void btnOpen_Click(object sender, EventArgs e)
+        public static List<string> currentOperations = new List<string>();
+        public void btnOpen_Click(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -39,9 +40,7 @@ namespace Pancake_Sort
 
                 pancakes.RemoveAt(0);
 
-                var task=Task.Run(()=>SortPancakes(new List<int>(pancakes)));
-
-                await task;
+                SortPancakes(pancakes);
 
                 listBoxOutA.DataSource = operations.First().Value;
 
@@ -52,60 +51,30 @@ namespace Pancake_Sort
                 watch.Reset();
             }
         }
-        async public static void SortPancakes(List<int> pancakes)
+        public static void SortPancakes(List<int> pancakes)
         {
-            List<Task> tasks = new List<Task>();
             for (int i = 1; i <= pancakes.Count; i++)
             {
-                Task task;
-                List<string> currentOperations = new List<string>();
                 var tempPancakes = ReversePancakesAt(new List<int>(pancakes), i);
                 currentOperations.Add("Pfannenwender unter Nr. " + pancakes[i - 1] + "! ");
+                Console.WriteLine(string.Join("", currentOperations));
+                if (operations.Count!=0 && currentOperations.Count >= operations.First().Value.Count) 
+                {
+                    currentOperations.RemoveAt(currentOperations.Count - 1);
+                    break;
+                }
                 if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x => x)))
                 {
-                    lock (operations)
+                    if (!operations.Keys.Contains(currentOperations.Count))
                     {
-                        if (!operations.Keys.Contains(currentOperations.Count))
-                        {
-                            operations.Add(currentOperations.Count, new List<string>(currentOperations));
-                        }
+                        operations.Add(currentOperations.Count, new List<string>(currentOperations));
                     }
                     currentOperations.RemoveAt(currentOperations.Count - 1);
                     continue;
                 }
                 else
                 {
-                    task=Task.Run(()=>SortPancakes(new List<int>(tempPancakes), new List<string>(currentOperations)));
-                    tasks.Add(task);
-                }
-            }
-            await Task.WhenAll(tasks);
-        }
-
-        public static void SortPancakes(List<int> pancakes, List<string> currentOperations)
-        {
-            for (int i = 1; i <= pancakes.Count; i++)
-            {
-                var tempPancakes = ReversePancakesAt(new List<int>(pancakes), i);
-                currentOperations.Add("Pfannenwender unter Nr. " + pancakes[i - 1] + "! ");
-                var watch = new System.Diagnostics.Stopwatch();
-                
-                watch.Start();
-                if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x => x)))
-                {
-                    lock (operations)
-                    {
-                        if (!operations.Keys.Contains(currentOperations.Count))
-                        {
-                            operations.Add(currentOperations.Count, new List<string>(currentOperations));
-                        }
-                    }
-                    currentOperations.RemoveAt(currentOperations.Count - 1);
-                    continue;
-                }
-                else
-                {
-                    SortPancakes(new List<int>(tempPancakes), currentOperations);
+                    SortPancakes(new List<int>(tempPancakes));
                 }
             }
             if (currentOperations.Count != 0)
