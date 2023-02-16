@@ -4,9 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace Pancake_Sort
 {
@@ -18,21 +17,18 @@ namespace Pancake_Sort
             listBoxOutA.Items.Clear();
             listBoxOutB.Items.Clear();
         }
-        public static SortedDictionary<int, List<string>> operations = new SortedDictionary<int, List<string>>();
-        public static List<string> currentOperations = new List<string>();
-        public void btnOpen_Click(object sender, EventArgs e)
+        public static SortedDictionary<int, List<string>> operationsA = new SortedDictionary<int, List<string>>();
+        public static SortedDictionary<int,SortedDictionary<int, int>> operationsB = new SortedDictionary<int,SortedDictionary<int, int>>();
+        public static List<string> currentOperationsA = new List<string>();
+        public static Dictionary <int,int> currentOperationsB = new Dictionary<int, int>();
+        async public void btnOpen_Click(object sender, EventArgs e)
         {
+            listBoxOutA.DataSource = currentOperationsA;
+            listBoxOutB.DataSource = null;
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                var watch = new System.Diagnostics.Stopwatch();
-
-                watch.Start();
-
-                operations.Clear();
-
-                listBoxOutA.DataSource=null;
-                listBoxOutB.DataSource=null;
-
+                progressBar.Style = ProgressBarStyle.Marquee;
+                btnOpen.Enabled = false;
                 string filePath = openFileDialog.FileName;
                 List <string> fileContent = File.ReadAllText(filePath).Trim().Split('\n').ToList();
 
@@ -40,46 +36,112 @@ namespace Pancake_Sort
 
                 pancakes.RemoveAt(0);
 
-                SortPancakes(pancakes);
+                await Task.Run(() => SortPancakesA(new List<int>(pancakes)));
+                btnOpen.Enabled = true;
+                listBoxOutA.DataSource = operationsA.First().Value;
 
-                listBoxOutA.DataSource = operations.First().Value;
-
-                watch.Stop();
-
-                lblPWUEOutput.Text=watch.ElapsedMilliseconds.ToString();
-
-                watch.Reset();
+                operationsA.Clear();
+                currentOperationsA.Clear();
+                progressBar.Style=ProgressBarStyle.Blocks;
             }
         }
-        public static void SortPancakes(List<int> pancakes)
+        async private void btnCalc_Click(object sender, EventArgs e)
         {
-            for (int i = 1; i <= pancakes.Count; i++)
+            int[] index = new int[2];
+            index[0] = 0;
+            index[1] = 0;
+            listBoxOutB.DataSource = null;
+            int n = int.Parse(txtNInput.Text);
+            List<List<int>> allPancakes = GenerateAllPermutations(n);
+            for (int i = 0; i < allPancakes.Count; i++) {
+                operationsB.Add(i, new SortedDictionary<int, int>());
+                currentOperationsB.Add(i, 0);
+                await SortPancakesB(allPancakes[i], i);
+                if ((index[1] != 0 && index[1] < operationsB[i].First().Key)|| index[1] ==0)
+                {
+                    index[0]= i;
+                    index[1] = operationsB[i].First().Key;
+                }
+            }
+            listBoxOutB.DataSource = allPancakes[operationsB[index[0]].First().Key];
+            lblPWUEOutput.Text = operationsB[index[0]].First().Key.ToString();
+            operationsB.Clear();
+            currentOperationsB.Clear();
+        }
+        private void txtNInput_TextChanged(object sender, EventArgs e)
+        {
+            if (int.TryParse(txtNInput.Text, out int result) && result>2)
+            {
+                btnCalc.Enabled = true;
+            }
+            else
+            {
+                btnCalc.Enabled = false;
+            }
+        }
+        async public static Task SortPancakesA(List<int> pancakes)
+        {
+            for (int i = pancakes.Count; i != 0; i--)
             {
                 var tempPancakes = ReversePancakesAt(new List<int>(pancakes), i);
-                currentOperations.Add("Pfannenwender unter Nr. " + pancakes[i - 1] + "! ");
-                Console.WriteLine(string.Join("", currentOperations));
-                if (operations.Count!=0 && currentOperations.Count >= operations.First().Value.Count) 
+                currentOperationsA.Add("Unter Größe " + pancakes[i - 1] + " an Stelle "+i+"! ");
+                if (operationsA.Count != 0 && currentOperationsA.Count >= operationsA.First().Key)
                 {
-                    currentOperations.RemoveAt(currentOperations.Count - 1);
-                    break;
+                    if (currentOperationsA.Count >= 2)
+                    {
+                        currentOperationsA.RemoveAt(currentOperationsA.Count - 1);
+                        currentOperationsA.RemoveAt(currentOperationsA.Count - 1);
+                    }
+                    return;
                 }
                 if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x => x)))
                 {
-                    if (!operations.Keys.Contains(currentOperations.Count))
+                    if (!operationsA.Keys.Contains(currentOperationsA.Count))
                     {
-                        operations.Add(currentOperations.Count, new List<string>(currentOperations));
+                        operationsA.Add(currentOperationsA.Count, new List<string>(currentOperationsA));
                     }
-                    currentOperations.RemoveAt(currentOperations.Count - 1);
-                    continue;
+                    currentOperationsA.RemoveAt(currentOperationsA.Count - 1);
                 }
                 else
                 {
-                    SortPancakes(new List<int>(tempPancakes));
+                    await SortPancakesA(new List<int>(tempPancakes));
                 }
             }
-            if (currentOperations.Count != 0)
+            if (currentOperationsA.Count != 0)
             {
-                currentOperations.RemoveAt(currentOperations.Count - 1);
+                currentOperationsA.RemoveAt(currentOperationsA.Count - 1);
+            }
+        }
+        async public static Task SortPancakesB(List<int> pancakes, int index)
+        {
+            for (int i = pancakes.Count; i != 0; i--)
+            {
+                var tempPancakes = ReversePancakesAt(new List<int>(pancakes), i);
+                currentOperationsB[index]++;
+                if (operationsB[index].Count != 0 && currentOperationsB[index] >= operationsB[index].First().Key)
+                {
+                    if (currentOperationsB[index] >= 2)
+                    {
+                        currentOperationsB[index] -= 2;
+                    }
+                    return;
+                }
+                if (tempPancakes.SequenceEqual(tempPancakes.OrderBy(x => x)))
+                {
+                    if (!operationsB[index].Keys.Contains(currentOperationsB[index]))
+                    {
+                        operationsB[index].Add(currentOperationsB[index], currentOperationsB[index]);
+                    }
+                    currentOperationsB[index]--;
+                }
+                else
+                {
+                    await SortPancakesB(new List<int>(tempPancakes), index);
+                }
+            }
+            if (currentOperationsB[index] != 0)
+            {
+                currentOperationsB[index]--;
             }
         }
         public static List<int> ReversePancakesAt(List<int> pancakes, int index)
@@ -87,6 +149,39 @@ namespace Pancake_Sort
             pancakes.Reverse(0, index);
             pancakes.RemoveAt(0);
             return pancakes;
+        }
+        static List<List<int>> GenerateAllPermutations(int n)
+        {
+            List<List<int>> permutations = new List<List<int>>();
+            List<int> numbers = Enumerable.Range(1, n).ToList();
+            GeneratePermutations(numbers, new List<int>(), permutations, n);
+            permutations=RemoveOrderedLists(permutations);
+            return permutations;
+        }
+
+        private static List<List<int>> RemoveOrderedLists(List<List<int>> permutations)
+        {
+            permutations.RemoveAt(0);
+            permutations.RemoveAt(permutations.Count - 1);
+            return permutations;
+        }
+
+        static void GeneratePermutations(List<int> numbers, List<int> currentPermutation, List<List<int>> permutations, int n)
+        {
+            if (currentPermutation.Count == n)
+            {
+                permutations.Add(currentPermutation);
+                return;
+            }
+
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                List<int> newNumbers = new List<int>(numbers);
+                newNumbers.RemoveAt(i);
+                List<int> newPermutation = new List<int>(currentPermutation);
+                newPermutation.Add(numbers[i]);
+                GeneratePermutations(newNumbers, newPermutation, permutations, n);
+            }
         }
     }
 }
